@@ -13,8 +13,6 @@
 #' @return a vector of N simulation with N, the number of iterations (.n_iter)
 #'
 #' @examples
-#' library(mocaredd)
-#'
 #' tt <- fct_make_mcs(.pdf = "normal", .mean = 0, .se = 1)
 #' hist(tt)
 #'
@@ -24,10 +22,10 @@ fct_make_mcs <- function(.n_iter = 10000, .pdf, .mean = NA, .se = NA, .params = 
   pdf_mean <- substitute(.mean)
   pdf_se <- substitute(.se)
 
-  if (.pdf == "normal") {
+  if (tolower(.pdf) == "normal") {
     SIMS <- stats::rnorm(n = .n_iter, mean = .mean, sd = .se)
     if (.trunc) SIMS[SIMS < 0] <- 0
-  } else if (.pdf == "beta") {
+  } else if (tolower(.pdf) == "beta") {
     SIMS <- stats::rbeta(n = .n_iter, shape1 = .params[1], shape2 = .params[2])
   }
 

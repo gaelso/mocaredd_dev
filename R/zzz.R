@@ -1,13 +1,8 @@
-
-
-## Make path to images from inst/assets available for the shiny app
+## Make path to 'assets' from inst/assets available for the shiny app
 .onLoad <- function(libname, pkgname) {
   shiny::addResourcePath(
     prefix = "assets",
-    directoryPath = system.file(
-      "assets",
-      package = "mocaredd"
-    )
+    directoryPath = system.file("assets", package = "mocaredd.dev2")
   )
 }
 

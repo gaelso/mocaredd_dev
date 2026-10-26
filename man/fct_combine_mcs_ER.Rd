@@ -22,34 +22,15 @@ or not, calculate the Emission Level for a reference or monitoring period
 for each simulation.
 }
 \examples{
-library(mocaredd)
-library(readxl)
-library(dplyr)
+path <- system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd.dev2")
 
-path <- system.file("extdata/example1-4pools.xlsx", package = "mocaredd")
+checked <- fct_checkinput(.path = path)
 
-cs <- read_xlsx(path = path, sheet = "c_stocks", na = "NA")
-ad <- read_xlsx(path = path, sheet = "AD_lu_transitions", na = "NA")
-usr <- read_xlsx(path = path, sheet = "user_inputs", na = "NA")
-time <- read_xlsx(path = path, sheet = "time_periods", na = "NA")
+sim_trans <- fct_combine_mcs_E(.checked_data = checked)
 
-time_clean <- time |> dplyr::mutate(nb_years = year_end - year_start + 1)
+sim_REF <- fct_combine_mcs_P(.data = sim_trans, .period_type = "REF")
 
-sim_trans <- fct_combine_mcs_E(.ad = ad, .cs = cs, .usr = usr)
-
-sim_REF <- fct_combine_mcs_P(
-  .data = sim_trans,
-  .time = time_clean,
-  .period_type = "REF",
-  .ad_annual = usr$ad_annual
-)
-
-sim_MON <- fct_combine_mcs_P(
-  .data = sim_trans,
-  .time = time_clean,
-  .period_type = "MON",
-  .ad_annual = usr$ad_annual
-)
+sim_MON <- fct_combine_mcs_P(.data = sim_trans, .period_type = "MON")
 
 ## !!! SIM MON and ER to be done
 

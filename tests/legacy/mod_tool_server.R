@@ -17,7 +17,7 @@ mod_tool_server <- function(id, rv) {
     ## Download example 1 if needed
     output$dl_template <- downloadHandler(
       filename = function(){"template1-4pools.xlsx"},
-      content  = function(file){file.copy(system.file("extdata/example1-4pools.xlsx", package = "mocaredd.dev2"), file)}
+      content  = function(file){file.copy(system.file("extdata/example1-4pools.xlsx", package = "mocaredd"), file)}
     )
 
     ## 1.2 BTN Browse ==========================================================

@@ -88,7 +88,7 @@ if (!is.null(result)) {
 }
 
 \examples{
-path <- system.file("extdata/example1-4pools.xlsx", package = "mocaredd.dev2")
+path <- system.file("extdata/example1-4pools.xlsx", package = "mocaredd")
 
 log_lines <- character()
 result <- withCallingHandlers(

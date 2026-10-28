@@ -80,6 +80,6 @@
 # ## Run often
 # devtools::document()
 # devtools::install()
-# devtools::load_all() ; shiny_run_mocaredd_dev2()
+# devtools::load_all() ; shiny_run_mocaredd()
 # # Checks
 # Sys.setenv("_R_CHECK_SYSTEM_CLOCK_" = 0) ; devtools::check()

@@ -106,7 +106,7 @@ body > .container-fluid {
   border-radius: 0.5rem;
 }
 
-/* App colors (light/dark values set as --app-* in the page head, R/shiny_run_mocaredd_dev2.R) */
+/* App colors (light/dark values set as --app-* in the page head, R/shiny_run_mocaredd.R) */
 
 /* Sidebars: no background colour, page background shows through */
 .bslib-sidebar-layout {
@@ -315,7 +315,7 @@ body > .container-fluid {
   text-decoration: none;
 }
 
-/* Below 992 px only the name shows (description hidden in R/shiny_run_mocaredd_dev2.R);
+/* Below 992 px only the name shows (description hidden in R/shiny_run_mocaredd.R);
    on phones it is tighter, and it goes when it no longer fits next to the logo and
    the menu button (logo clear space unchanged) */
 @media (max-width: 575.98px) {

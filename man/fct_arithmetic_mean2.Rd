@@ -37,7 +37,7 @@ emission reduction, the mean, its standard error, and the half-width uncertainty
 quantile for \code{setup$conf_level}.
 }
 \examples{
-path <- system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd.dev2")
+path <- system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd")
 
 checked <- fct_checkinput(.path = path)
 

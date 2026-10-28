@@ -21,7 +21,7 @@ for each simulation, as the length-weighted average of the annual
 emissions (E_year) of the periods it contains.
 }
 \examples{
-path <- system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd.dev2")
+path <- system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd")
 
 checked <- fct_checkinput(.path = path)
 

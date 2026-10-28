@@ -40,7 +40,7 @@ formulas (IPCC 2006, Vol. 1, Ch. 3, Eq. 3.1 and 3.2).
 }\if{html}{\out{</div>}}
 }
 \examples{
-path    <- system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd.dev2")
+path    <- system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd")
 checked <- fct_checkinput(.path = path)
 fct_cstock_formula2(checked$data$carbon)
 

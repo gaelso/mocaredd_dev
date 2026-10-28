@@ -1,6 +1,6 @@
 test_that("means match fct_arithmetic_mean2() on the extdata templates", {
   for (f in c("mocaredd-templatev2-simple.xlsx", "mocaredd-templatev2-4pools.xlsx", "example1-4pools.xlsx")) {
-    checked <- fct_checkinput(.path = system.file("extdata", f, package = "mocaredd.dev2"))
+    checked <- fct_checkinput(.path = system.file("extdata", f, package = "mocaredd"))
     r2 <- fct_arithmetic_mean2(checked)
     r3 <- fct_arithmetic_mean3(checked)
     expect_equal(r3$ER$E, r2$ER$E[match(r3$ER$period_type, r2$ER$period_type)])
@@ -8,7 +8,7 @@ test_that("means match fct_arithmetic_mean2() on the extdata templates", {
 })
 
 test_that("IPCC rules: AGB * (1 + RS) * CF and ER = FREL - MON", {
-  checked <- fct_checkinput(.path = system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd.dev2"))
+  checked <- fct_checkinput(.path = system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd"))
   r3 <- fct_arithmetic_mean3(checked)
 
   ## carbon stock of one land use by hand: product rule on AGB, (1 + RS), CF

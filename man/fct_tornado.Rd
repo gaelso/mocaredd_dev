@@ -24,7 +24,7 @@ at their mean. Bars are sorted by swing; labels give the share of
 the output variance (first-order).
 }
 \examples{
-path <- system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd.dev2")
+path <- system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd")
 checked <- fct_checkinput(.path = path)
 
 sa <- fct_sensitivity2(.checked_data = checked)

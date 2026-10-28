@@ -22,7 +22,7 @@ or not, calculate the Emission Level for a reference or monitoring period
 for each simulation.
 }
 \examples{
-path <- system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd.dev2")
+path <- system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd")
 
 checked <- fct_checkinput(.path = path)
 

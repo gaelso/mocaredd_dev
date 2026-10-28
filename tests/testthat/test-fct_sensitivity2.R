@@ -2,7 +2,7 @@ files <- c("mocaredd-templatev2-simple.xlsx", "mocaredd-templatev2-4pools.xlsx",
 
 test_that("means match fct_arithmetic_mean3() and shares add up", {
   for (f in files) {
-    checked <- fct_checkinput(.path = system.file("extdata", f, package = "mocaredd.dev2"))
+    checked <- fct_checkinput(.path = system.file("extdata", f, package = "mocaredd"))
     sa <- fct_sensitivity2(checked)
     r3 <- fct_arithmetic_mean3(checked)
 
@@ -21,7 +21,7 @@ test_that("means match fct_arithmetic_mean3() and shares add up", {
 })
 
 test_that("AD only: delta method equals IPCC Approach 1", {
-  checked <- fct_checkinput(.path = system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd.dev2"))
+  checked <- fct_checkinput(.path = system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd"))
   checked$data$carbon$c_se <- 0
   sa <- fct_sensitivity2(checked)
   r3 <- fct_arithmetic_mean3(checked)
@@ -31,7 +31,7 @@ test_that("AD only: delta method equals IPCC Approach 1", {
 })
 
 test_that("tornado swing is linear in AD", {
-  checked <- fct_checkinput(.path = system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd.dev2"))
+  checked <- fct_checkinput(.path = system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd"))
   sa  <- fct_sensitivity2(checked)
   tor <- sa$ad_tornado
   expect_equal(tor$value_high - tor$value, tor$value - tor$value_low)

@@ -15,12 +15,12 @@
 #' @examples
 #' if (interactive()) {
 #'
-#' shiny_run_mocaredd_dev2()
+#' shiny_run_mocaredd()
 #'
 #' }
 #'
 #' @export
-shiny_run_mocaredd_dev2 <- function(...) {
+shiny_run_mocaredd <- function(...) {
 
   ##
   ## GLOBAL ####################################################################
@@ -30,7 +30,7 @@ shiny_run_mocaredd_dev2 <- function(...) {
 
   ## !!! In a package the translation folder needs to be directed to the package location
   i18n <- shiny.i18n::Translator$new(
-    translation_json_path = system.file("assets/translations.json", package = "mocaredd.dev2")
+    translation_json_path = system.file("assets/translations.json", package = "mocaredd")
     )
   i18n$set_translation_language('en')
 
@@ -41,7 +41,7 @@ shiny_run_mocaredd_dev2 <- function(...) {
 
   ## Version stamp for inst/assets files (latest modification time), added to their URLs
   ## so browsers reload CSS and JS after a change instead of using a cached copy
-  asset_v <- list.files(system.file("assets", package = "mocaredd.dev2"), recursive = TRUE, full.names = TRUE) |>
+  asset_v <- list.files(system.file("assets", package = "mocaredd"), recursive = TRUE, full.names = TRUE) |>
     file.mtime() |>
     max() |>
     as.integer()
@@ -215,7 +215,7 @@ shiny_run_mocaredd_dev2 <- function(...) {
               })
             ),
             tags$small(
-              paste0("{mocaredd} v", utils::packageVersion("mocaredd.dev2"), " - "),
+              paste0("{mocaredd} v", utils::packageVersion("mocaredd"), " - "),
               i18n$t(.tr$footer_credit),
               " ",
               tags$a(

@@ -4,7 +4,7 @@ fct_make_EF <- function(.dat) {
 
   ## !!! FOR TESTING ONLY
   rv <- list(checks = list(), inputs = list(), sims = list(), res = list())
-  .path = system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd.dev2")
+  .path = system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd")
   check_result = fct_checkinput(.path = .path, .minislow = 0.2)
   rv$checks$all_ok <- isTRUE(check_result$all_ok)
   .dat <- check_result$data

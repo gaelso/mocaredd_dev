@@ -18,7 +18,7 @@
 #'
 #' @examples
 #'
-#' path <- system.file("extdata/mocaredd-template-v2-4pools.xlsx", package = "mocaredd.dev2")
+#' path <- system.file("extdata/mocaredd-template-v2-4pools.xlsx", package = "mocaredd")
 #'
 #' tabs <- c("user", "time", "area", "carbon")
 #' dat <- purrr::map(tabs , function(x){

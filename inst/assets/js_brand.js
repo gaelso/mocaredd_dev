@@ -1,7 +1,7 @@
 // FAO branding: footer links and alt texts follow the active language; favicon follows
 // the browser light/dark theme.
 // Elements carry data-src-<lang>, data-alt-<lang> or data-href-<lang> attributes
-// (en, fr, es); see R/shiny_run_mocaredd_dev2.R. The FAO logo is English in all languages.
+// (en, fr, es); see R/shiny_run_mocaredd.R. The FAO logo is English in all languages.
 
 // Language: <html lang>, footer links, Global Goals alt text
 Shiny.addCustomMessageHandler('app-locale', function(msg) {

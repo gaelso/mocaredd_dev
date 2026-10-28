@@ -9,7 +9,7 @@ mod_about_server <- function(id, rv) {
 
     output$dl_example <- downloadHandler(
       filename = function(){"mocaredd-templatev2-simple.xlsx"},
-      content  = function(file){file.copy(system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd.dev2"), file)}
+      content  = function(file){file.copy(system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd"), file)}
     )
 
   }) ## END module server function

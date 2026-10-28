@@ -30,7 +30,7 @@
 #'         \code{c_tot_V} (variance) and \code{c_tot_U} (relative uncertainty).
 #'
 #' @examples
-#' path    <- system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd.dev2")
+#' path    <- system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd")
 #' checked <- fct_checkinput(.path = path)
 #' fct_cstock_formula2(checked$data$carbon)
 #'

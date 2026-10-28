@@ -125,7 +125,7 @@ mod_about_UI <- function(id, i18n, .tr){
 
   ## The data overview describes inst/extdata/mocaredd-templatev2-simple.xlsx: update it
   ## if the demo dataset changes
-  demo_kb <- system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd.dev2") |>
+  demo_kb <- system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd") |>
     file.size() |>
     (\(x) round(x / 1024))()
 
@@ -220,7 +220,7 @@ mod_about_UI <- function(id, i18n, .tr){
       tags$dl(
         class = "about-facts",
         tags$dt(i18n$t(.tr$about_pkg_version)),
-        tags$dd(as.character(utils::packageVersion("mocaredd.dev2"))),
+        tags$dd(as.character(utils::packageVersion("mocaredd"))),
         tags$dt(i18n$t(.tr$about_pkg_licence)),
         tags$dd("MIT, \u00a9 2024 mocaredd authors, Open Foris"),
         tags$dt(i18n$t(.tr$about_pkg_authors)),

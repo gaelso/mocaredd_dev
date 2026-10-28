@@ -10,7 +10,7 @@
 ##
 ## Outputs: inst/assets/flags/<code>.svg, LICENSE.txt and flags.css (the flag-icons
 ## .fi base rules plus one rule per flag, keeping the classes used in
-## R/shiny_run_mocaredd_dev2.R: "fi fi-gb", "fi fi-fr", "fi fi-es").
+## R/shiny_run_mocaredd.R: "fi fi-gb", "fi fi-fr", "fi fi-es").
 ## ============================================================================
 
 ## 1. Configuration ------

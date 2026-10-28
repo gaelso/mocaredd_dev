@@ -15,7 +15,7 @@
 #' @importFrom rlang .data
 #'
 #' @examples
-#' path <- system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd.dev2")
+#' path <- system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd")
 #' checked <- fct_checkinput(.path = path)
 #'
 #' sa <- fct_sensitivity2(.checked_data = checked)

@@ -13,10 +13,10 @@
 #' - Removed: old observe(rv$checks$all_done), check_msg gt render (replaced
 #'   by the console), and all redundant req()+if() guard pairs in vb outputs.
 #'
-#' @importFrom rlang .data
-#'
 #' Text built here goes through i18n$t(.tr$key): inside render functions it
 #' follows the language selector; in observers it uses the language at run time.
+#'
+#' @importFrom rlang .data
 #'
 #' @noRd
 mod_tool_server2 <- function(id, rv, i18n, .tr) {
@@ -38,7 +38,7 @@ mod_tool_server2 <- function(id, rv, i18n, .tr) {
       filename = function() { "mocaredd-templatev2-simple.xlsx" },
       content  = function(file) {
         file.copy(
-          system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd.dev2"),
+          system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd"),
           file
         )
       }
@@ -48,7 +48,7 @@ mod_tool_server2 <- function(id, rv, i18n, .tr) {
       filename = function() { "mocaredd-templatev2-4pools.xlsx" },
       content  = function(file) {
         file.copy(
-          system.file("extdata/mocaredd-templatev2-4pools.xlsx", package = "mocaredd.dev2"),
+          system.file("extdata/mocaredd-templatev2-4pools.xlsx", package = "mocaredd"),
           file
         )
       }
@@ -58,7 +58,7 @@ mod_tool_server2 <- function(id, rv, i18n, .tr) {
       filename = function() { "mocaredd-templatev1-simple.xlsx" },
       content  = function(file) {
         file.copy(
-          system.file("extdata/example2-with-sims.xlsx", package = "mocaredd.dev2"),
+          system.file("extdata/example2-with-sims.xlsx", package = "mocaredd"),
           file
         )
       }

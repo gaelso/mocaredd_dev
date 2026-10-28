@@ -70,7 +70,7 @@
 #' @importFrom rlang .data
 #'
 #' @examples
-#' path <- system.file("extdata/example1-4pools.xlsx", package = "mocaredd.dev2")
+#' path <- system.file("extdata/example1-4pools.xlsx", package = "mocaredd")
 #'
 #' log_lines <- character()
 #' result <- withCallingHandlers(
@@ -87,10 +87,10 @@ fct_checkinput <- function(.path, .pb_session = NULL, .pb_id = NULL, .pb_max = 1
 
 
   ## !!! FOR TESTING ONLY
-  # .path = system.file("extdata/example1-4pools.xlsx", package = "mocaredd.dev2")
-  # .path = system.file("extdata/mocaredd-templatev2-4pools.xlsx", package = "mocaredd.dev2")
-  # .path = system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd.dev2")
-  # .path = system.file("extdata/test-simple-noCF.xlsx", package = "mocaredd.dev2")
+  # .path = system.file("extdata/example1-4pools.xlsx", package = "mocaredd")
+  # .path = system.file("extdata/mocaredd-templatev2-4pools.xlsx", package = "mocaredd")
+  # .path = system.file("extdata/mocaredd-templatev2-simple.xlsx", package = "mocaredd")
+  # .path = system.file("extdata/test-simple-noCF.xlsx", package = "mocaredd")
   # .pb_id = NULL ; .pb_session = NULL ; .pb_max = 80 ; .minislow = NA
   ## !!!
 

@@ -1,4 +1,4 @@
 library(testthat)
-library(mocaredd.dev2)
+library(mocaredd)
 
-test_check("mocaredd.dev2")
+test_check("mocaredd")

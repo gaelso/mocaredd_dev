@@ -19,8 +19,7 @@ fct_forestplot(
   .cilower,
   .ciupper,
   .id_colname,
-  .conflevel,
-  .filename = NA
+  .conflevel
 )
 ```
 
@@ -70,10 +69,6 @@ fct_forestplot(
 - .conflevel:
 
   character text to specify what confidence level was used, ex. "90%".
-
-- .filename:
-
-  path to save the table or NA.
 
 ## Value
 

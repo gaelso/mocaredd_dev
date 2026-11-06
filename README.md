@@ -42,7 +42,7 @@ R and Rstudio are installed, open R studio and run the folloing code in the term
 
 ```         
 if (!require(remotes)) install.packages("remotes")
-if (!require(mocaredd)) remotes::install_github("openforis/mocaredd@v1.0")
+if (!require(mocaredd)) remotes::install_github("openforis/mocaredd", upgrade = "never")
 
 mocaredd::shiny_run_mocaredd()
 ```

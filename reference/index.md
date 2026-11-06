@@ -27,9 +27,6 @@
   : Make a forest plot to show Monte Carlo simulation results
 - [`fct_histogram()`](https://openforis.github.io/mocaredd/reference/fct_histogram.md)
   : Generate histogram to show the simulations at any stage.
-- [`fct_make_formula()`](https://openforis.github.io/mocaredd/reference/fct_make_formula.md)
-  : Check that the app's the input data has matching land uses and
-  correct carbon pools and associated factors.
 - [`fct_make_formula2()`](https://openforis.github.io/mocaredd/reference/fct_make_formula2.md)
   : Make the carbon stock formula of a land use from its carbon elements
 - [`fct_make_formula_U()`](https://openforis.github.io/mocaredd/reference/fct_make_formula_U.md)
@@ -37,8 +34,6 @@
   Approach 1)
 - [`fct_make_mcs()`](https://openforis.github.io/mocaredd/reference/fct_make_mcs.md)
   : Generate Monte Carlo Simulations for a given PDF
-- [`fct_round()`](https://openforis.github.io/mocaredd/reference/fct_round.md)
-  : Reproduce round function from MS Excel
 - [`fct_sensitivity2()`](https://openforis.github.io/mocaredd/reference/fct_sensitivity2.md)
   : Sensitivity analysis of REDD+ emissions and emission reductions
   (delta method)

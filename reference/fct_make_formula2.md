@@ -1,15 +1,13 @@
 # Make the carbon stock formula of a land use from its carbon elements
 
-Successor of
-[`fct_make_formula()`](https://openforis.github.io/mocaredd/reference/fct_make_formula.md).
-Same inputs, but the biomass part is written so each input appears
-once: - AGB + RS: `AGB * (1 + RS)` (BGB derived from AGB), - AGB + BGB:
-`(AGB + BGB)`, multiplied by `CF` when biomass is in dry matter (DM).
-DW, LI and SOC are added as separate terms.
+The biomass part is written so each input appears once: - AGB + RS:
+`AGB * (1 + RS)` (BGB derived from AGB), - AGB + BGB: `(AGB + BGB)`,
+multiplied by `CF` when biomass is in dry matter (DM). DW, LI and SOC
+are added as separate terms.
 
-             Both versions give the same carbon stock. The factored form makes
-             the AGB/BGB dependence explicit, which matters when uncertainty is
-             propagated term by term with IPCC Approach 1 rules.
+             The factored form makes the AGB/BGB dependence explicit, which
+             matters when uncertainty is propagated term by term with IPCC
+             Approach 1 rules.
 
 ## Usage
 

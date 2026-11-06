@@ -37,9 +37,10 @@ fct_arithmetic_mean2(.checked_data)
 
 A list with elements `ER` (reference / monitoring levels and emission
 reductions with mean, se, U\\ (per time period, with uncertainty),
-`gg_emissions` (figure with confidence intervals, ER as areas with their
-confidence interval) and `emissions_table` (a tidy tibble ready to be
-turned into a gt table by the app).
+`gg_emissions` (figure with emissions as lines with confidence interval
+areas, and emission reductions as points with error bars) and
+`emissions_table` (a tidy tibble ready to be turned into a gt table by
+the app).
 
 ## Examples
 

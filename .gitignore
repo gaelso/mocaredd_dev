@@ -63,3 +63,6 @@ rsconnect/
 docs
 inst/doc
 **/.quarto/
+
+# Claude Code personal settings
+.claude/settings.local.json

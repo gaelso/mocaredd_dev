@@ -20,3 +20,5 @@
 ^tests/tuto-pkg\.R$
 ^tests/experimental$
 ^tests/sensitivity$
+^CLAUDE\.md$
+^\.claude$

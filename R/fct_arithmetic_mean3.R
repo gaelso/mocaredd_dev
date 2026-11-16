@@ -394,7 +394,10 @@ fct_arithmetic_mean3 <- function(.checked_data){
 
   tbl_summary <- ari_ER |>
     dplyr::transmute(
-      grp   = "Reference, monitoring & emission reductions",
+      grp   = dplyr::if_else(
+        stringr::str_detect(.data$period_type, "^ER-"),
+        "Emission reductions and removals", "Reference and monitoring emissions"
+      ),
       item  = dplyr::case_when(
         stringr::str_detect(.data$period_type, "^ER-") ~ paste0("Reduction ", stringr::str_remove(.data$period_type, "^ER-")),
         stringr::str_detect(.data$period_type, "^E-")  ~ paste0("Emissions ", stringr::str_remove(.data$period_type, "^E-")),

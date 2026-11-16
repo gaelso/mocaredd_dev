@@ -357,9 +357,14 @@
       "sp": "Emisiones por periodo"
     },
     {
-      "en": "Reference, monitoring & emission reductions",
-      "fr": "Référence, suivi et réductions d'émissions",
-      "sp": "Referencia, monitoreo y reducciones de emisiones"
+      "en": "Reference and monitoring emissions",
+      "fr": "Émissions de référence et de suivi",
+      "sp": "Emisiones de referencia y de monitoreo"
+    },
+    {
+      "en": "Emission reductions and removals",
+      "fr": "Réductions d'émissions et absorptions",
+      "sp": "Reducciones de emisiones y absorciones"
     },
     {
       "en": "No period",

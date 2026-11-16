@@ -85,6 +85,8 @@ fct_combine_mcs_E <- function(.checked_data){
   ## Map a degraded land-use id back to its intact id by stripping the degradation
   ## extension (and, in v2, a trailing separator left by the label-to-id conversion)
   to_intact_id <- function(lu_id) {
+    ## No degraded LU or no extension (C stock difference method): nothing to strip
+    if (length(lu_id) == 0L || is.na(.setup$dg_ext)) return(lu_id)
     out <- stringr::str_remove(lu_id, .setup$dg_ext)
     if (is_v2) out <- stringr::str_replace(out, "[^A-Za-z]$", "")
     out

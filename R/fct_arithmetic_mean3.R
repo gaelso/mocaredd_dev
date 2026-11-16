@@ -111,7 +111,8 @@ fct_arithmetic_mean3 <- function(.checked_data){
   c_degrat <- carbon_pools |>
     dplyr::filter(.data$c_element == "DG_ratio") |>
     dplyr::mutate(
-      lu_intact = stringr::str_remove(.data$c_lu_id, setup$dg_ext),
+      ## No extension (C stock difference method): no DG_ratio rows, nothing to strip
+      lu_intact = if (is.na(setup$dg_ext)) .data$c_lu_id else stringr::str_remove(.data$c_lu_id, setup$dg_ext),
       lu_intact = if (is_v2) stringr::str_replace(.data$lu_intact, "[^A-Za-z]$", "") else .data$lu_intact
     ) |>
     dplyr::select("c_lu_id", "lu_intact", DG = "c_value", DG_se = "c_se")

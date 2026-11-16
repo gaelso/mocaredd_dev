@@ -69,6 +69,8 @@ fct_sensitivity2 <- function(.checked_data){
   carbon_pools <- if (is_v2) dplyr::filter(carbon, .data$c_element != "CF") else carbon
 
   to_intact <- function(lu_id) {
+    ## No degraded LU or no extension (C stock difference method): nothing to strip
+    if (length(lu_id) == 0L || is.na(setup$dg_ext)) return(lu_id)
     out <- stringr::str_remove(lu_id, setup$dg_ext)
     if (is_v2) out <- stringr::str_replace(out, "[^A-Za-z]$", "")
     out

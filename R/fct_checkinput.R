@@ -154,7 +154,7 @@ fct_checkinput <- function(.path, .pb_session = NULL, .pb_id = NULL, .pb_max = 1
       message("\u2713 ", pass_label)
     } else {
       detail <- if (length(problems) > 0L) {
-        paste0(" [", paste(problems, collapse = ", "), "]")
+        paste0(" [", paste(problems, collapse = "; "), "]")
       } else {
         ""
       }
@@ -176,10 +176,66 @@ fct_checkinput <- function(.path, .pb_session = NULL, .pb_id = NULL, .pb_max = 1
     }
   }
 
-  ## Return names of tables whose check flag is FALSE (replaces the repeated
-  ## if/else pattern from fct_check_data2)
-  failed_tables <- function(check_flags, table_names) {
-    table_names[!check_flags]
+  ## + Problem reporting ------
+  ## Each table check returns NULL when it passes, or a short text locating the
+  ## first problem, e.g. "first problem: col: c_lu, row: 5, value: empty".
+  ## Rows are Excel row numbers: row 1 is the header, data row i is row i + 1.
+
+  table_labels <- c(
+    setup  = "setup/user_inputs",
+    time   = "time/time_periods",
+    area   = "area/AD_lu_transitions",
+    carbon = "carbon/c_stocks"
+  )
+
+  ## Return "<table label> (<first problem>)" for each failed table. Problems
+  ## are passed as named arguments (setup = , time = , area = , carbon = ) so
+  ## each one is matched to its table label by name, never by position.
+  failed_tables <- function(...) {
+    probs <- list(...)
+    stopifnot(
+      !is.null(names(probs)),
+      all(names(probs) %in% names(table_labels))
+    )
+    probs <- Filter(Negate(is.null), probs)
+    vapply(
+      names(probs),
+      function(tbl) paste0(table_labels[[tbl]], " (", probs[[tbl]], ")"),
+      character(1),
+      USE.NAMES = FALSE
+    )
+  }
+
+  ## Prefix a problem text with its table label, for cross-table checks
+  in_table <- function(.tbl, .txt) {
+    if (is.null(.txt)) NULL else paste0(table_labels[[.tbl]], ", ", .txt)
+  }
+
+  ## Return the first non-NULL argument
+  first_non_null <- function(...) {
+    for (p in list(...)) if (!is.null(p)) return(p)
+    NULL
+  }
+
+  ## Format a cell value for messages
+  fmt_value <- function(x) {
+    if (length(x) == 0L || is.na(x)) "empty" else paste0("'", x, "'")
+  }
+
+  ## Locate the first problem cell. '.bad' is a named list with one logical
+  ## vector per column (TRUE = problem in that row). The lowest row wins, ties
+  ## go to the first column listed. '.notes' optionally adds a text per column.
+  first_cell <- function(.df, .bad, .notes = NULL) {
+    rows <- vapply(.bad, function(b) {
+      i <- which(b)[1]
+      if (is.na(i)) NA_integer_ else as.integer(i)
+    }, integer(1))
+    if (length(rows) == 0L || all(is.na(rows))) return(NULL)
+    col  <- names(rows)[which.min(rows)]
+    i    <- rows[[col]]
+    val  <- if (col %in% names(.df)) paste0(", value: ", fmt_value(.df[[col]][i])) else ""
+    note <- if (!is.null(.notes) && col %in% names(.notes)) paste0(", ", .notes[[col]]) else ""
+    paste0("first problem: col: ", col, ", row: ", i + 1L, val, note)
   }
 
   ## Make ID from labels
@@ -278,28 +334,36 @@ fct_checkinput <- function(.path, .pb_session = NULL, .pb_id = NULL, .pb_max = 1
 
   show_progress("Checking column names...", step * pb_factor)
 
-   if (check_version == 1) {
-     check_cols_setup  <- all(checklist$cols$setup  %in% names(setup))
-     check_cols_time   <- all(checklist$cols$time   %in% names(time))
-     check_cols_area   <- all(checklist$cols$area   %in% names(area))
-     check_cols_carbon <- all(checklist$cols$carbon %in% names(carbon))
-  } else {
-    check_cols_setup  <- all(checklist$cols$setupv2  %in% names(setup))
-    check_cols_time   <- all(checklist$cols$time     %in% names(time))
-    check_cols_area   <- all(checklist$cols$areav2   %in% names(area))
-    check_cols_carbon <- all(checklist$cols$carbonv2 %in% names(carbon))
+  ## First required column not found in the header row
+  missing_col <- function(.df, .cols) {
+    m <- setdiff(.cols, names(.df))
+    if (length(m) == 0L) return(NULL)
+    paste0(
+      "first problem: col: ", m[1], ", row: 1, column not found",
+      if (length(m) > 1L) paste0(" (", length(m) - 1L, " more missing)") else ""
+    )
   }
 
-  check_cols_all <- all(check_cols_setup, check_cols_time, check_cols_area, check_cols_carbon)
+  cols_req <- if (check_version == 1) {
+    checklist$cols[c("setup", "time", "area", "carbon")]
+  } else {
+    checklist$cols[c("setupv2", "time", "areav2", "carbonv2")]
+  }
+
+  prob_cols <- failed_tables(
+    setup  = missing_col(setup,  cols_req[[1]]),
+    time   = missing_col(time,   cols_req[[2]]),
+    area   = missing_col(area,   cols_req[[3]]),
+    carbon = missing_col(carbon, cols_req[[4]])
+  )
+
+  check_cols_all <- length(prob_cols) == 0L
 
   show_msg(
-    check         = check_cols_all,
+    check      = check_cols_all,
     pass_label = "Column names: all required columns present",
     fail_label = "Column names: missing columns in",
-    problems   = failed_tables(
-      c(check_cols_setup, check_cols_time, check_cols_area, check_cols_carbon),
-      c("setup/user_inputs", "time/time_periods", "area/AD_lu_transitions", "carbon/c_stocks")
-    )
+    problems   = prob_cols
   )
 
   if (!check_cols_all) return(out_fail)
@@ -314,27 +378,38 @@ fct_checkinput <- function(.path, .pb_session = NULL, .pb_id = NULL, .pb_max = 1
 
   show_progress("Checking table dimensions...", step * pb_factor)
 
-  check_size_setup  <- nrow(setup)  == 1L  # exactly one settings row
-  #check_size_time   <- nrow(time)   >= 2L  # at least one REF + one MON period
-  check_size_area   <- nrow(area)   >= 2L  # at least two land use transitions
-  check_size_carbon <- nrow(carbon) >= 2L  # at least one initial + one final C stock
+  ## Row count outside [.min, .max]
+  size_problem <- function(.df, .min, .max = Inf) {
+    n <- nrow(.df)
+    if (n < .min) {
+      return(paste0("first problem: ", n, " data row(s) found, at least ", .min, " expected"))
+    }
+    if (n > .max) {
+      return(paste0("first problem: row: ", .max + 2L, ", only ", .max, " data row(s) expected"))
+    }
+    NULL
+  }
 
+  ## Period type present at least once (at least one REF + one MON period)
+  ptype_problem <- function(.ptype) {
+    if (any(stringr::str_detect(time$period_type, .ptype), na.rm = TRUE)) return(NULL)
+    paste0("first problem: col: period_type, no ", .ptype, " period found")
+  }
 
-  check_size_time_ref <- any(stringr::str_detect(time$period_type, "REF"))
-  check_size_time_mon <- any(stringr::str_detect(time$period_type, "MON"))
+  prob_size <- failed_tables(
+    setup  = size_problem(setup, 1L, 1L),  # exactly one settings row
+    time   = first_non_null(size_problem(time, 2L), ptype_problem("REF"), ptype_problem("MON")),
+    area   = size_problem(area, 2L),       # at least two land use transitions
+    carbon = size_problem(carbon, 2L)      # at least one initial + one final C stock
+  )
 
-  check_size_time <- all(nrow(time) >= 2L, check_size_time_ref, check_size_time_mon)
-
-  check_size_all <- all(check_size_setup, check_size_time, check_size_area, check_size_carbon)
+  check_size_all <- length(prob_size) == 0L
 
   show_msg(
-    check         = check_size_all,
+    check      = check_size_all,
     pass_label = "Table sizes: all tables have sufficient rows",
     fail_label = "Table sizes: unexpected row count in",
-    problems   = failed_tables(
-      c(check_size_setup, check_size_time, check_size_area, check_size_carbon),
-      c("setup/user_inputs", "time/time_periods", "area/AD_lu_transitions", "carbon/c_stocks")
-    )
+    problems   = prob_size
   )
 
   if (!check_size_all) return(out_fail)
@@ -349,68 +424,92 @@ fct_checkinput <- function(.path, .pb_session = NULL, .pb_id = NULL, .pb_max = 1
 
   show_progress("Checking column data types...", step * pb_factor)
 
-  check_dt_setup <- all(
-    is.logical(setup$trunc_pdf),
-    is.numeric(setup$n_iter),
-    is.numeric(setup$ran_seed)  | is.logical(setup$ran_seed),
-    if (check_version == 1) is.character(setup$c_unit) else TRUE,
-    is.character(setup$dg_pool) | is.logical(setup$dg_pool),
-    is.logical(setup$ad_annual),
-    is.numeric(setup$conf_level),
-    is.numeric(setup$digits)
+  ## Expected types: num, chr, lgl, or num_lgl / chr_lgl (also accept an
+  ## empty column, which readxl reads as logical)
+  type_notes <- c(
+    num     = "expected a number",
+    chr     = "expected text",
+    lgl     = "expected TRUE or FALSE",
+    num_lgl = "expected a number or empty",
+    chr_lgl = "expected text or empty"
   )
 
-  check_dt_time <- all(
-    is.character(time$period_no),
-    is.numeric(time$year_start),
-    is.numeric(time$year_end),
-    is.character(time$period_type)
+  type_ok <- function(x, type) {
+    switch(
+      type,
+      num     = is.numeric(x),
+      chr     = is.character(x),
+      lgl     = is.logical(x),
+      num_lgl = is.numeric(x) || is.logical(x),
+      chr_lgl = is.character(x) || is.logical(x)
+    )
+  }
+
+  ## Rows that make a column fail its type: text in a numeric column, non
+  ## TRUE/FALSE values in a logical column, else empty cells (a column with no
+  ## valid value), else the first row.
+  type_bad_rows <- function(x, type) {
+    bad <- switch(
+      sub("_lgl$", "", type),
+      num = !is.na(x) & is.na(suppressWarnings(as.numeric(x))),
+      lgl = !is.na(x) & !toupper(as.character(x)) %in% c("TRUE", "FALSE"),
+      chr = rep(FALSE, length(x))
+    )
+    if (!any(bad)) bad <- is.na(x)
+    if (!any(bad)) bad <- seq_along(x) == 1L
+    bad
+  }
+
+  type_problem <- function(.df, .spec) {
+    is_ok <- vapply(names(.spec), function(col) type_ok(.df[[col]], .spec[[col]]), logical(1))
+    .spec <- .spec[!is_ok]
+    if (length(.spec) == 0L) return(NULL)
+    bad   <- purrr::imap(.spec, function(type, col) type_bad_rows(.df[[col]], type))
+    notes <- stats::setNames(unname(type_notes[.spec]), names(.spec))
+    first_non_null(
+      first_cell(.df, bad, .notes = notes),
+      paste0("first problem: col: ", names(.spec)[1], ", ", notes[[1]])
+    )
+  }
+
+  v1 <- check_version == 1
+
+  spec_setup <- c(
+    n_iter = "num", if (v1) c(c_unit = "chr"), dg_pool = "chr_lgl", ad_annual = "lgl",
+    conf_level = "num", digits = "num", ran_seed = "num_lgl", trunc_pdf = "lgl"
   )
 
-  check_dt_area <- all(
-    is.numeric(area$trans_no),
-    if (check_version == 1) is.character(area$trans_id) else TRUE,
-    is.character(area$trans_period),
-    if (check_version == 1) is.character(area$lu_initial_id) else is.character(area$lu_initial),
-    if (check_version == 1) is.character(area$lu_final_id) else is.character(area$lu_final),
-    # is.numeric(area$trans_area)  | is.logical(area$trans_area),
-    # is.numeric(area$trans_se)    | is.logical(area$trans_se),
-    is.numeric(area$trans_area),
-    is.numeric(area$trans_se),
-    is.character(area$trans_pdf),
-    is.numeric(area$trans_pdf_a) | is.logical(area$trans_pdf_a),
-    is.numeric(area$trans_pdf_b) | is.logical(area$trans_pdf_b),
-    is.numeric(area$trans_pdf_c) | is.logical(area$trans_pdf_c),
-    is.character(area$redd_activity)
+  spec_time <- c(period_no = "chr", year_start = "num", year_end = "num", period_type = "chr")
+
+  spec_area <- c(
+    trans_no = "num", if (v1) c(trans_id = "chr"), trans_period = "chr",
+    if (v1) c(lu_initial_id = "chr", lu_final_id = "chr") else c(lu_initial = "chr", lu_final = "chr"),
+    trans_area = "num", trans_se = "num", trans_pdf = "chr",
+    trans_pdf_a = "num_lgl", trans_pdf_b = "num_lgl", trans_pdf_c = "num_lgl",
+    redd_activity = "chr"
   )
 
-  check_dt_carbon <- all(
-    is.numeric(carbon$c_no),
-    if (check_version == 1) is.character(carbon$c_id) else TRUE,
-    is.character(carbon$c_period),
-    is.character(carbon$c_element),
-    if (check_version == 1) is.character(carbon$c_lu_id) else is.character(carbon$c_lu),
-    if (check_version == 2) is.character(carbon$c_unit) else TRUE,
-    # is.numeric(carbon$c_value)  | is.logical(carbon$c_value),
-    # is.numeric(carbon$c_se)     | is.logical(carbon$c_se),
-    is.numeric(carbon$c_value),
-    is.numeric(carbon$c_se),
-    is.character(carbon$c_pdf),
-    is.numeric(carbon$c_pdf_a)  | is.logical(carbon$c_pdf_a),
-    is.numeric(carbon$c_pdf_b)  | is.logical(carbon$c_pdf_b),
-    is.numeric(carbon$c_pdf_c)  | is.logical(carbon$c_pdf_c)
+  spec_carbon <- c(
+    c_no = "num", if (v1) c(c_id = "chr"), c_period = "chr", c_element = "chr",
+    if (v1) c(c_lu_id = "chr") else c(c_unit = "chr", c_lu = "chr"),
+    c_value = "num", c_se = "num", c_pdf = "chr",
+    c_pdf_a = "num_lgl", c_pdf_b = "num_lgl", c_pdf_c = "num_lgl"
   )
 
-  check_dt_all <- all(check_dt_setup, check_dt_time, check_dt_area, check_dt_carbon)
+  prob_dt <- failed_tables(
+    setup  = type_problem(setup,  spec_setup),
+    time   = type_problem(time,   spec_time),
+    area   = type_problem(area,   spec_area),
+    carbon = type_problem(carbon, spec_carbon)
+  )
+
+  check_dt_all <- length(prob_dt) == 0L
 
   show_msg(
     check      = check_dt_all,
     pass_label = "Data types: all columns have correct data types",
     fail_label = "Data types: unexpected column types in",
-    problems   = failed_tables(
-      c(check_dt_setup, check_dt_time, check_dt_area, check_dt_carbon),
-      c("setup/user_inputs", "time/time_periods", "area/AD_lu_transitions", "carbon/c_stocks")
-    )
+    problems   = prob_dt
   )
 
   if (!check_dt_all) return(out_fail)
@@ -426,41 +525,64 @@ fct_checkinput <- function(.path, .pb_session = NULL, .pb_id = NULL, .pb_max = 1
 
   show_progress("Checking category values...", step * pb_factor)
 
-  ## Parse dg_pool, which can be a comma-separated string e.g. "AGB, BGB"
-  dg_pool_vec <- stringr::str_split(setup$dg_pool, pattern = ",") |>
-    purrr::map(stringr::str_trim) |>
-    unlist()
+  cats    <- checklist$cats
+  allowed <- function(x) paste0("allowed: ", paste(x, collapse = ", "))
 
-  check_cats_setup <- all(
-    if (check_version == 1) setup$c_unit %in% checklist$cats$c_unit else TRUE,
-    dg_pool_vec  %in% checklist$cats$c_pool
+  ## dg_pool can be a comma-separated string e.g. "AGB, BGB"
+  bad_dg_pool <- !purrr::map_lgl(
+    stringr::str_split(setup$dg_pool, pattern = ","),
+    function(x) all(stringr::str_trim(x) %in% cats$c_pool)
   )
 
-  ptype_pattern  <- paste0(checklist$cats$p_type, collapse = "|")
-  check_cats_time <- all(stringr::str_detect(unique(time$period_type[!is.na(time$period_type)]), pattern = ptype_pattern))
+  ptype_pattern <- paste0(cats$p_type, collapse = "|")
 
-  check_cats_area <- all(
-    unique(area$redd_activity)                    %in% checklist$cats$r_acti,
-    unique(stringr::str_to_lower(area$trans_pdf)) %in% checklist$cats$pdf
+  ## v2: c_unit must be a known unit, and DM or C for carbon pools
+  bad_c_unit <- if (!v1) {
+    (!is.na(carbon$c_unit) & !carbon$c_unit %in% cats$c_unit) |
+      (carbon$c_element %in% cats$c_pool & !carbon$c_unit %in% c("DM", "C"))
+  }
+
+  prob_cats <- failed_tables(
+    setup = first_cell(
+      setup,
+      c(if (v1) list(c_unit = !setup$c_unit %in% cats$c_unit), list(dg_pool = bad_dg_pool)),
+      .notes = c(c_unit = allowed(cats$c_unit), dg_pool = allowed(cats$c_pool))
+    ),
+    time = first_cell(
+      time,
+      list(period_type = !is.na(time$period_type) & !stringr::str_detect(time$period_type, ptype_pattern)),
+      .notes = c(period_type = "allowed: REF, MON, or with a number e.g. REF1, MON2")
+    ),
+    area = first_cell(
+      area,
+      list(
+        trans_pdf     = !stringr::str_to_lower(area$trans_pdf) %in% cats$pdf,
+        redd_activity = !area$redd_activity %in% cats$r_acti
+      ),
+      .notes = c(trans_pdf = allowed(cats$pdf), redd_activity = allowed(cats$r_acti))
+    ),
+    carbon = first_cell(
+      carbon,
+      c(
+        list(c_element = !carbon$c_element %in% c(cats$c_pool, cats$c_var)),
+        if (!v1) list(c_unit = bad_c_unit),
+        list(c_pdf = !stringr::str_to_lower(carbon$c_pdf) %in% cats$pdf)
+      ),
+      .notes = c(
+        c_element = allowed(c(cats$c_pool, cats$c_var)),
+        c_unit    = paste0(allowed(cats$c_unit), " (DM or C for carbon pools)"),
+        c_pdf     = allowed(cats$pdf)
+      )
+    )
   )
 
-  check_cats_carbon <- all(
-    unique(carbon$c_element) %in% c(checklist$cats$c_pool, checklist$cats$c_var),
-    if (check_version == 2) all(unique(carbon$c_unit[!is.na(carbon$c_unit)]) %in% checklist$cats$c_unit) else TRUE,
-    if (check_version == 2) all(carbon$c_unit[carbon$c_element %in% checklist$cats$c_pool] %in% c("DM", "C")) else TRUE,
-    unique(stringr::str_to_lower(carbon$c_pdf)) %in% checklist$cats$pdf
-  )
-
-  check_cats_all <- all(check_cats_setup, check_cats_time, check_cats_area, check_cats_carbon)
+  check_cats_all <- length(prob_cats) == 0L
 
   show_msg(
     check      = check_cats_all,
     pass_label = "Category values: all categories are valid",
     fail_label = "Category values: invalid categories in",
-    problems   = failed_tables(
-      c(check_cats_setup, check_cats_time, check_cats_area, check_cats_carbon),
-      c("setup/user_inputs", "time/time_periods", "area/AD_lu_transitions", "carbon/c_stocks")
-    )
+    problems   = prob_cats
   )
 
   if (!check_cats_all) return(out_fail)
@@ -486,7 +608,7 @@ fct_checkinput <- function(.path, .pb_session = NULL, .pb_id = NULL, .pb_max = 1
         trans_id = paste(.data$trans_period, .data$lu_initial_id, .data$lu_final_id, sep = "*")
       )
 
-    unique_c_period <- length(unique(carbon$c_period)) == 1 & unique(carbon$c_period) == "ALL"
+    unique_c_period <- identical(unique(carbon$c_period), "ALL")
 
     carbon <- carbon |>
       dplyr::mutate(
@@ -504,21 +626,40 @@ fct_checkinput <- function(.path, .pb_session = NULL, .pb_id = NULL, .pb_max = 1
   ## Get dg_ext to IDs
   setup$dg_ext <- label2id(setup$dg_ext) |> stringr::str_remove_all("\"")
 
-  ## Check unique IDs
-  check_ids_time   <- nrow(time)   == length(unique(time$period_no))
-  check_ids_area   <- nrow(area)   == length(unique(area$trans_id))
-  check_ids_carbon <- nrow(carbon) == length(unique(carbon$c_id))
+  ## First missing or duplicated ID. '.parts' are the template columns the ID
+  ## is made of (one column in v1, several in v2 where IDs are built above).
+  id_problem <- function(.df, .id, .parts) {
+    miss <- Reduce(`|`, lapply(.parts, function(p) is.na(.df[[p]])))
+    dup  <- duplicated(.id)
+    i    <- which(miss | dup)[1]
+    if (is.na(i)) return(NULL)
+    if (miss[i]) {
+      col <- .parts[is.na(unlist(.df[i, .parts]))][1]
+      paste0("first problem: col: ", col, ", row: ", i + 1L, ", value: empty")
+    } else {
+      paste0(
+        "first problem: col: ", paste(.parts, collapse = " + "), ", row: ", i + 1L,
+        ", duplicate of row ", match(.id[i], .id) + 1L
+      )
+    }
+  }
 
-  check_ids_all <- all(check_ids_time, check_ids_area, check_ids_carbon)
+  id_parts_area   <- if (v1) "trans_id" else c("trans_period", "lu_initial", "lu_final")
+  id_parts_carbon <- if (v1) "c_id" else if (unique_c_period) c("c_lu", "c_element") else c("c_period", "c_lu", "c_element")
+
+  prob_ids <- failed_tables(
+    time   = id_problem(time,   time$period_no, "period_no"),
+    area   = id_problem(area,   area$trans_id,  id_parts_area),
+    carbon = id_problem(carbon, carbon$c_id,    id_parts_carbon)
+  )
+
+  check_ids_all <- length(prob_ids) == 0L
 
   show_msg(
     check      = check_ids_all,
     pass_label = "Unique IDs: no duplicates or missing IDs found",
     fail_label = "Unique IDs: duplicate or missing IDs found in",
-    problems   = failed_tables(
-      c(check_ids_time, check_ids_area, check_ids_carbon),
-      c("setup/user_inputs", "time/time_periods", "area/AD_lu_transitions", "carbon/c_stocks")
-    )
+    problems   = prob_ids
   )
 
   if (!check_ids_all) return(out_fail)
@@ -536,14 +677,12 @@ fct_checkinput <- function(.path, .pb_session = NULL, .pb_id = NULL, .pb_max = 1
 
   ## + Match periods ------
   ## Periods match between AD and time tables
-  check_match_period_area <- all(
-    sort(unique(area$trans_period)) == sort(unique(time$period_no))
-  )
+  check_match_period_area <- setequal(area$trans_period, time$period_no)
 
   ## Periods match between CS and time tables (skip when all rows use "ALL")
   carbon_with_period <- carbon |> dplyr::filter(.data$c_period != "ALL")
   check_match_period_carbon <- if (nrow(carbon_with_period) > 0L) {
-    all(sort(unique(carbon$c_period)) == sort(unique(time$period_no)))
+    setequal(carbon$c_period, time$period_no)
   } else {
     TRUE
   }
@@ -632,18 +771,88 @@ fct_checkinput <- function(.path, .pb_session = NULL, .pb_id = NULL, .pb_max = 1
 
 
 
+  ## + Locate first problems ------
+  ## Only computed for failed checks
+  lu_cols <- if (v1) c("lu_initial_id", "lu_final_id") else c("lu_initial", "lu_final")
+  c_lu_col <- if (v1) "c_lu_id" else "c_lu"
+
+  loc_period_area <- if (!check_match_period_area) first_non_null(
+    in_table("area", first_cell(area, list(trans_period = !area$trans_period %in% time$period_no))),
+    in_table("time", first_cell(
+      time, list(period_no = !time$period_no %in% area$trans_period),
+      .notes = c(period_no = "no transitions for this period"))
+    )
+  )
+
+  loc_period_carbon <- if (!check_match_period_carbon) first_non_null(
+    in_table("carbon", first_cell(carbon, list(c_period = !carbon$c_period %in% time$period_no))),
+    in_table("time", first_cell(
+      time, list(period_no = !time$period_no %in% carbon$c_period),
+      .notes = c(period_no = "no carbon stocks for this period"))
+    )
+  )
+
+  loc_lu_id <- if (!check_match_lu_id) in_table("area", first_cell(
+    area,
+    stats::setNames(list(!area$lu_initial_id %in% lu_in_carbon, !area$lu_final_id %in% lu_in_carbon), lu_cols)
+  ))
+
+  loc_dm <- if (!check_match_dm) {
+    if (v1) {
+      in_table("setup", first_cell(setup, list(
+        c_unit        = !setup$c_unit %in% c("DM", "C"),
+        c_fraction    = !isTRUE(setup$c_fraction > 0),
+        c_fraction_se = !isTRUE(setup$c_fraction_se >= 0)
+      )))
+    } else if (!any(carbon$c_unit %in% c("DM", "C"))) {
+      in_table("carbon", "first problem: col: c_unit, no row with unit DM or C")
+    } else if (!"CF" %in% carbon$c_element) {
+      in_table("carbon", "first problem: col: c_element, no CF row found")
+    } else {
+      is_cf <- carbon$c_element %in% "CF"
+      in_table("carbon", first_cell(carbon, list(
+        c_value = is_cf & !dplyr::coalesce(carbon$c_value > 0, FALSE),
+        c_se    = is_cf & !dplyr::coalesce(carbon$c_se >= 0, FALSE)
+      )))
+    }
+  }
+
+  loc_rsagb <- if (!check_match_rsagb) in_table("carbon", first_cell(
+    carbon,
+    stats::setNames(list(
+      carbon$c_element %in% "RS" & !carbon$c_plu_id %in% carbon$c_plu_id[carbon$c_element %in% "AGB"]
+    ), c_lu_col),
+    .notes = stats::setNames("no AGB for this land use", c_lu_col)
+  ))
+
+  loc_dg <- if (!check_match_dg) {
+    if (is.na(setup$dg_ext)) {
+      in_table("setup", "first problem: col: dg_ext, row: 2, value: empty, needed when DG_ratio is used")
+    } else {
+      in_table("carbon", first_cell(
+        carbon,
+        stats::setNames(list(carbon$c_element %in% "DG_ratio" & carbon$c_lu_id %in% dg_lu_bad), c_lu_col)
+      ))
+    }
+  }
+
   ## + Recap ------
+  with_loc <- function(.label, .loc) if (is.null(.loc)) .label else paste0(.label, " (", .loc, ")")
+
   match_flags  <- c(check_match_period_area, check_match_period_carbon, check_match_lu_id,
                     check_match_dm, check_match_rsagb, check_match_dg)
   match_labels <- c(
-    "trans_period does not match period_no",
-    "c_period does not match period_no",
-    "land use IDs present in AD/area but missing from c_stocks/carbon",
-    "c_unit is 'DM' but CF is missing in usr(v1)/carbon(v2)",
-    "RS defined for land uses with no AGB values or mismatch C unit",
-    paste0(
-      "DG_ratio used but dg_ext does not resolve to existing LU IDs",
-      if (length(dg_lu_bad) > 0) paste0(" (dg_ext: '", setup$dg_ext, "', LUs: ", paste(dg_lu_bad, collapse = ", "), ")")
+    with_loc("trans_period does not match period_no", loc_period_area),
+    with_loc("c_period does not match period_no", loc_period_carbon),
+    with_loc("land use IDs present in AD/area but missing from c_stocks/carbon", loc_lu_id),
+    with_loc("c_unit is 'DM' but CF is missing in usr(v1)/carbon(v2)", loc_dm),
+    with_loc("RS defined for land uses with no AGB values or mismatch C unit", loc_rsagb),
+    with_loc(
+      paste0(
+        "DG_ratio used but dg_ext does not resolve to existing LU IDs",
+        if (length(dg_lu_bad) > 0) paste0(" (dg_ext: '", setup$dg_ext, "', LUs: ", paste(dg_lu_bad, collapse = ", "), ")")
+      ),
+      loc_dg
     )
   )
 

@@ -316,7 +316,8 @@ mod_tool_server2 <- function(id, rv, i18n, .tr) {
         dplyr::mutate(
           grp = dplyr::case_when(
             .data$grp == .tr$check_tbl_grp_period ~ i18n$t(.tr$check_tbl_grp_period),
-            .data$grp == .tr$check_tbl_grp_er     ~ i18n$t(.tr$check_tbl_grp_er),
+            .data$grp == .tr$check_tbl_grp_levels ~ i18n$t(.tr$check_tbl_grp_levels),
+            .data$grp == .tr$check_tbl_grp_err    ~ i18n$t(.tr$check_tbl_grp_err),
             TRUE                                  ~ .data$grp
           ),
           item = .data$item |>

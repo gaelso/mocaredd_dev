@@ -25,6 +25,42 @@ rv$inputs  <- check_result$data  # tables, for value boxes and period/ER aggrega
 rv$checks$ari_res <- fct_arithmetic_mean2(.checked_data = rv$checked)
 
 
+## TEST EXCEL OUTPUT WITH FORMULAS ######
+
+## Simulations, as in mod_tool_server2.R (btn_run_mcs)
+if (!is.na(rv$inputs$setup$ran_seed)) set.seed(rv$inputs$setup$ran_seed) else set.seed(sample(1:100, 1))
+
+rv$mcs$sim_trans <- fct_combine_mcs_E(.checked_data = rv$checked)
+rv$mcs$sim_REF   <- fct_combine_mcs_P(rv$mcs$sim_trans, .period_type = "REF")
+rv$mcs$sim_MON   <- fct_combine_mcs_P(rv$mcs$sim_trans, .period_type = "MON")
+rv$mcs$sim_ER    <- fct_combine_mcs_ER(
+  .sim_ref   = rv$mcs$sim_REF,
+  .sim_mon   = rv$mcs$sim_MON,
+  .ad_annual = rv$inputs$setup$ad_annual
+)
+
+## Input tabs + Calc EF, Calc ERRs, Calc MCS, Calc Formulas and Sims
+path_xl <- file.path("tests/workbooks/mocaredd-results.xlsx")
+
+fct_make_XL(
+  .checked_data = rv$checked,
+  .mcs          = rv$mcs,
+  .path_in      = path,
+  .path_out     = path_xl
+)
+
+## Smaller file: simulation statistics as values, no Sims tab
+# fct_make_XL(.checked_data = rv$checked, .mcs = rv$mcs, .path_in = path,
+#             .path_out = path_xl, .sims_sheet = FALSE)
+
+openxlsx2::wb_get_sheet_names(openxlsx2::wb_load(path_xl))
+
+## Open in Excel / LibreOffice (formulas are calculated on opening).
+## After recalculation, 'Calc ERRs' blocks 4 and 5 should match:
+fct_arithmetic_mean3(.checked_data = rv$checked)$ER
+# utils::browseURL(path_xl)
+
+
 ## TEST GRAPHS ARITHMETIC MEAN ######
 
 ## Run internal of fct_arithmetic_mean2()

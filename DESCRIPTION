@@ -41,7 +41,8 @@ Imports:
     grDevices,
     utils,
     scales,
-    readxl
+    readxl,
+    openxlsx2
 Config/Needs/website:
     r-lib/pkgdown,
     quarto

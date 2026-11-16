@@ -27,6 +27,9 @@
   : Make a forest plot to show Monte Carlo simulation results
 - [`fct_histogram()`](https://openforis.github.io/mocaredd/reference/fct_histogram.md)
   : Generate histogram to show the simulations at any stage.
+- [`fct_make_XL()`](https://openforis.github.io/mocaredd/reference/fct_make_XL.md)
+  : Export the inputs and all calculations to one Excel workbook with
+  live formulas
 - [`fct_make_formula2()`](https://openforis.github.io/mocaredd/reference/fct_make_formula2.md)
   : Make the carbon stock formula of a land use from its carbon elements
 - [`fct_make_formula_U()`](https://openforis.github.io/mocaredd/reference/fct_make_formula_U.md)
